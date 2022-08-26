@@ -8,10 +8,6 @@ import matplotlib.pyplot as plt
 # 덕진구에 위치
 # 연도 별로(2020/ 2021) 나누고 시간 / 월 별로 나눠서 시계열 분석해보기
 
-
-# ★★★★★★★★ 주차구획수가 150대인데 진입차량수가 2000대 이상이 나올수가 있나?
-
-
 data = pd.read_csv('C:/Users/hyunj/Desktop/전주공모전자료/제공받은데이터/전라북도 전주시_공영주차장 이용 통계(실내체육관).csv', encoding='CP949')
 
 # 데이터를 활용하기 전에 진입차량수(일반) 열과 진출차량수(일반) 열은 , 때문에 object이기 때문에 전처리
@@ -26,9 +22,129 @@ for column in columns :
             
         else :
             data.loc[i, column] = float(temp)
-            #%%
+#%%
+# 한글 폰트 사용을 위해서 세팅
+from matplotlib import font_manager, rc
+font_path = "C:/Windows/Fonts/NGULIM.TTF"
+font = font_manager.FontProperties(fname=font_path).get_name()
+rc('font', family=font)
+#%%
 data.info()
 #%%
+'''
+===============================================================================
+실내주차장 월 별로 시간대 진입차량 확인하기
+===============================================================================
+'''
+        
+years = [2020, 2021]
+months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+for year in years :
+    globals()['data_{}'.format(year)] =  data[data['연도'] == year]
+    exec("data_{} = data_{}.reset_index(inplace = False, drop = True)".format(year, year))
+    exec("temp = data_{}.copy()".format(year)) 
+    
+    for month in months :
+        month_time_list = []
+        for i in range(24) :
+            time = str(i) + ':00 ~ ' + str(i+1) + ':00'
+            globals()['entry_data_{}_{}'.format(i,i+1)] =  int(temp.loc[(temp['시간대'] == time) & (temp['월'] == month), '진입차량수(일반)']) 
+            month_time_list.append(globals()['entry_data_{}_{}'.format(i,i+1)])
+        # 그래프 그리기
+        plt.figure(figsize=(10,8))
+        x_axis = [i for i in range(24)]
+        label_x_axis = [str(i) + '시~'+str(i+1)+'시' for i in range(24)]
+        plt.plot(x_axis, month_time_list, marker = '*')
+        plt.xticks(x_axis, label_x_axis)
+        plt.tick_params(axis='x',direction = 'out', length=10, pad=10, labelsize=9, width = 2,  color='r', labelrotation = 50)
+        # plt.axhline(y=sum(month_time_list) / 24, color='r', linestyle = "--", linewidth=2)
+        plt.xlabel('시간')
+        plt.ylabel('진입차량수 ')
+        plt.title('실내주차장 {}년 {}월 시간별 진입차량수 현황'.format(year, month))
+        plt.show()
+        
+#%%
+'''
+===============================================================================
+실내주차장 월 별로 시간대 진출차량 확인하기
+===============================================================================
+'''
+        
+years = [2020, 2021]
+months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+for year in years :
+    globals()['data_{}'.format(year)] =  data[data['연도'] == year]
+    exec("data_{} = data_{}.reset_index(inplace = False, drop = True)".format(year, year))
+    exec("temp = data_{}.copy()".format(year)) 
+    
+    for month in months :
+        month_time_list = []
+        for i in range(24) :
+            time = str(i) + ':00 ~ ' + str(i+1) + ':00'
+            globals()['entry_data_{}_{}'.format(i,i+1)] =  int(temp.loc[(temp['시간대'] == time) & (temp['월'] == month), '진출차량수(일반)']) 
+            month_time_list.append(globals()['entry_data_{}_{}'.format(i,i+1)])
+        # 그래프 그리기
+        plt.figure(figsize=(10,8))
+        x_axis = [i for i in range(24)]
+        label_x_axis = [str(i) + '시~'+str(i+1)+'시' for i in range(24)]
+        plt.plot(x_axis, month_time_list, marker = '*')
+        plt.xticks(x_axis, label_x_axis)
+        plt.tick_params(axis='x',direction = 'out', length=10, pad=10, labelsize=9, width = 2,  color='r', labelrotation = 50)
+        # plt.axhline(y=sum(month_time_list) / 24, color='r', linestyle = "--", linewidth=2)
+        plt.xlabel('시간')
+        plt.ylabel('진출차량수 ')
+        plt.title('실내주차장 {}년 {}월 시간별 진출차량수 현황'.format(year, month))
+        plt.show()
+#%%
+'''
+===============================================================================
+진입차량 & 진출차량 비교하면서 158면을 넘어가는 시간대 확인하기
+===============================================================================
+'''
+        
+years = [2020, 2021]
+months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+for year in years :
+    globals()['data_{}'.format(year)] =  data[data['연도'] == year]
+    exec("data_{} = data_{}.reset_index(inplace = False, drop = True)".format(year, year))
+    exec("temp = data_{}.copy()".format(year)) 
+    
+    for month in months :
+        time_diff_dic = {}
+        temp_sum = 0
+        for i in range(24) :
+            time = str(i) + ':00 ~ ' + str(i+1) + ':00'
+            globals()['entry'] =  int(temp.loc[(temp['시간대'] == time) & (temp['월'] == month), '진입차량수(일반)'] / 30) 
+            globals()['exit'] =  int(temp.loc[(temp['시간대'] == time) & (temp['월'] == month), '진출차량수(일반)'] / 30)
+            diff = entry - exit
+            time_diff_dic[time] = diff
+            temp_sum += diff
+            if temp_sum > 158 :
+                print("{}년 {}월 실내주차장의 허용 주차면수를 넘은 시간대는 {}입니다".format(year, month, time))
+                break
+            if (i == 23) and (temp_sum <= 158) :
+                max_time = max(time_diff_dic, key=time_diff_dic.get)
+                all_values = time_diff_dic.values()
+                diff_max = max(all_values)
+                print("{}년 {}월에는 실내주차장의 허용 주차면수를 넘기지 않았고 가장 근접했던 시간대는 {}이고 주차한수는 {}입니다".format(year, month, max_time, diff_max))
+
+'''
+===============================================================================
+인사이트
+2020년 5월 실내주차장의 허용 주차면수를 넘은 시간대는 18:00 ~ 19:00입니다
+2020년 6월 실내주차장의 허용 주차면수를 넘은 시간대는 19:00 ~ 20:00입니다
+2020년 7월 실내주차장의 허용 주차면수를 넘은 시간대는 18:00 ~ 19:00입니다
+
+2021년 6월 실내주차장의 허용 주차면수를 넘은 시간대는 19:00 ~ 20:00입니다
+2021년 7월 실내주차장의 허용 주차면수를 넘은 시간대는 18:00 ~ 19:00입니다
+2021년 8월 실내주차장의 허용 주차면수를 넘은 시간대는 18:00 ~ 19:00입니다
+2021년 9월 실내주차장의 허용 주차면수를 넘은 시간대는 18:00 ~ 19:00입니다
+2021년 10월 실내주차장의 허용 주차면수를 넘은 시간대는 19:00 ~ 20:00입니다
+2021년 11월 실내주차장의 허용 주차면수를 넘은 시간대는 19:00 ~ 20:00입니다
+===============================================================================
+'''
+#%%
+          
 # 진입차량수
 # 2020년 
 data_2020 = data[data['연도'] == 2020]
@@ -41,12 +157,6 @@ for i in range(24) :
     globals()['entry_data_2020_{}_{}'.format(i,i+1)] =  int(sum(data_2020[data_2020['시간대'] == time].loc[:, '진입차량수(일반)']) / 12)
     entry_list_by_time_2020.append(globals()['entry_data_2020_{}_{}'.format(i,i+1)])
     
-#%%
-# 한글 폰트 사용을 위해서 세팅
-from matplotlib import font_manager, rc
-font_path = "C:/Windows/Fonts/NGULIM.TTF"
-font = font_manager.FontProperties(fname=font_path).get_name()
-rc('font', family=font)
 #%%
 # 2020년 시간별 그래프 그리기
 plt.figure(figsize=(20,15))
