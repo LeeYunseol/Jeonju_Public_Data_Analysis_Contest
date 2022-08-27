@@ -289,3 +289,65 @@ plt.ylabel('진출차량수 ')
 plt.title('비보이 광장 2020 & 2021년 전체 월별 진출차량수 현황')
 plt.legend()
 plt.show()
+
+#%%
+'''
+===============================================================================
+일 별 시계열 진입차량수 데이터 시계열 분해 
+===============================================================================
+'''
+daily_data = data['입차일자'].value_counts(sort=False)
+#plt.plot(daily_data)
+
+#시리즈를 데이터프레임으로
+daily_data = pd.DataFrame(daily_data, columns=['입차일자'])
+daily_data.reset_index(inplace = True)
+daily_data.rename(columns={'index':'Date'}, inplace=True)
+daily_data.sort_index(inplace=True)
+#%%
+daily_data.info()
+
+daily_data['Date'] = pd.to_datetime(daily_data['Date'])
+
+daily_data.set_index('Date', drop=True, inplace=True)
+#%%
+# stats model의 Seasnonl_decompose 라이브러리를 활용하여 전력 수요 데이터 분해 실시 
+from statsmodels.tsa.seasonal import seasonal_decompose # 데이터 필터 라이러리 호출 
+
+result = seasonal_decompose(daily_data, model='Additive')  
+result.plot()
+
+#%%
+'''
+===============================================================================
+월 별 진입차량수 시계열 데이터 시계열 분해 
+===============================================================================
+'''
+
+# 월별 데이터를 모아야하기 때문에 년도-월로 데이터를 통합
+for i in tqdm(range(len(data)), desc = "년-월 데이터 전처리중") :
+    data.loc[i, '입차일자_년_월'] = str(data.loc[i, '입차일자_년']) + "-" + str(data.loc[i, '입차일자_월'])
+#%%
+monthly_data = data['입차일자_년_월'].value_counts(sort=False)
+
+
+#시리즈를 데이터프레임으로
+monthly_data = pd.DataFrame(monthly_data, columns=['입차일자_년_월'])
+monthly_data.reset_index(inplace = True)
+monthly_data.rename(columns={'index':'Date'}, inplace=True)
+monthly_data.sort_index(inplace=True)
+
+monthly_data.info()
+
+monthly_data['Date'] = pd.to_datetime(monthly_data['Date'])
+
+monthly_data.set_index('Date', drop=True, inplace=True)
+#%%
+plt.title('비보이 광장 월별 그래프')
+plt.plot(monthly_data)
+#%%
+# stats model의 Seasnonl_decompose 라이브러리를 활용하여 전력 수요 데이터 분해 실시 
+from statsmodels.tsa.seasonal import seasonal_decompose # 데이터 필터 라이러리 호출 
+
+result = seasonal_decompose(monthly_data, model='Additive')  
+result.plot()

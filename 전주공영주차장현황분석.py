@@ -435,3 +435,46 @@ plt.show()
 
 ===============================================================================
 '''
+
+#%%
+'''
+===============================================================================
+월 별 진입차량수 시계열 데이터 시계열 분해 - 월 별만 가능함
+===============================================================================
+'''
+# 앞에서 정의한 entry_list_by_month_2020 & 2021를 사용
+index = []
+years = [2020, 2021]
+months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+for year in years :
+    for month in months :
+        index.append(str(year) + '-' + str(month))
+        
+total_month_list = entry_list_by_month_2020 + entry_list_by_month_2021
+#%%
+temp = {'Date' : index, '진입차량수' : total_month_list}
+monthly_data = pd.DataFrame(data = temp, columns = ['Date', '진입차량수'])
+#%%
+
+#plt.title('실내주차장 월별 그래프')
+#plt.plot(monthly_data)
+
+monthly_data.reset_index(inplace = True)
+monthly_data.sort_index(inplace=True)
+#%%
+monthly_data.info()
+
+monthly_data['Date'] = pd.to_datetime(monthly_data['Date'])
+
+monthly_data.set_index('Date', drop=True, inplace=True)
+monthly_data.drop('index', axis =1 , inplace = True)
+
+plt.title('실내주차장 월별 그래프')
+plt.plot(monthly_data)
+
+#%%
+# stats model의 Seasnonl_decompose 라이브러리를 활용하여 전력 수요 데이터 분해 실시 
+from statsmodels.tsa.seasonal import seasonal_decompose # 데이터 필터 라이러리 호출 
+
+result = seasonal_decompose(monthly_data, model='Additive')  
+result.plot()
