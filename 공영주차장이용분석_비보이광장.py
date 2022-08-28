@@ -301,13 +301,16 @@ daily_data = data['입차일자'].value_counts(sort=False)
 
 #시리즈를 데이터프레임으로
 daily_data = pd.DataFrame(daily_data, columns=['입차일자'])
+
 daily_data.reset_index(inplace = True)
 daily_data.rename(columns={'index':'Date'}, inplace=True)
+
 daily_data.sort_index(inplace=True)
+
 #%%
 daily_data.info()
 
-daily_data['Date'] = pd.to_datetime(daily_data['Date'])
+daily_data['Date'] = pd.to_datetime(daily_data['Date'], format='%Y-%m-%d')
 
 daily_data.set_index('Date', drop=True, inplace=True)
 #%%
@@ -351,3 +354,94 @@ from statsmodels.tsa.seasonal import seasonal_decompose # 데이터 필터 라�
 
 result = seasonal_decompose(monthly_data, model='Additive')  
 result.plot()
+#%%
+'''
+===============================================================================
+월 별 진입차량수 시계열 데이터 시계열 분해 
+
+생각해보면 daily_data를 사용하면 안됨  - 시간데이터가 손실
+===============================================================================
+'''
+#daily_data['요일'] = daily_data['Date'].dt.day_name()
+
+array_day = data['입차일자'].unique()
+
+# 모든 날짜의 시간대의 값을 가진 변수
+all_time_data = []
+times = [i for i in range(24)]
+for day in array_day :
+    for time in times :
+        temp = len(data[(data['입차일자'] == day) & (data['전처리_입차시간'] == time)])
+        all_time_data.append(temp)
+#%%
+# 2020년 1월 1일은 수요일이니 수- 일, 월 - 일까지는 명시해주기
+
+plt.figure(figsize=(300, 15))
+
+
+plt.plot(all_time_data)
+#plt.xticks(x_axis, label_x_axis)
+# plt.axhline(y=sum(month_time_list) / 24, color='r', linestyle = "--", linewidth=2)
+plt.xlabel('월')
+plt.ylabel('진입차량수 ')
+plt.title('비보이 광장 전체 진입차량수 현황')
+plt.show()
+
+#%%
+array_day_with_time = []
+
+for day in array_day :
+    for time in times :
+        temp = day + " " + str(time) + ":00:00"
+        array_day_with_time.append(temp)
+#%%
+temp = {'Date' : array_day_with_time, '진입차량수' : all_time_data}
+time_daily_data = pd.DataFrame(temp, columns = ['Date','진입차량수'])
+time_daily_data['Date'] = pd.to_datetime(time_daily_data['Date'])
+time_daily_data['요일'] = time_daily_data['Date'].dt.day_name()
+time_daily_data['시간'] = time_daily_data['Date'].dt.hour
+time_daily_data.set_index('Date', drop=True, inplace=True)
+#%%
+from statsmodels.tsa.seasonal import seasonal_decompose # 데이터 필터 라이러리 호출 
+
+result = seasonal_decompose(time_daily_data['진입차량수'], model='Additive')  
+result.plot()
+#%%
+# 그래프가 너무 길어서 2020년 1~6월 / 2020년 7월~12월 / 2021년 1월~6월 / 2021년 7월~12일
+# 2020년 1월 1일 ~ 2020년 6월 30일 : 182일 -> 4368 -> 0 ~ 4367
+# 2020년 7월 1일 ~ 2020년 12월 31일 : 184일 -> 4416 -> 4368 ~ 8783
+# 2021년 1월 1일 ~ 2021년 6월 30일 : 181일 -> 4344 -> 8784 ~ 13127
+# 2021년 7월 1일 ~ 2021년 12월 31일 : 184일 -> 4416 -> 13128 ~ 17543
+
+num_mon = len(time_daily_data[time_daily_data['요일'] == 'Monday'] == True) / 24
+num_tues = len(time_daily_data[time_daily_data['요일'] == 'Tuesday'] == True) / 24
+num_wedn = len(time_daily_data[time_daily_data['요일'] == 'Wednesday'] == True) / 24
+num_thurs = len(time_daily_data[time_daily_data['요일'] == 'Thursday'] == True) / 24
+num_fri = len(time_daily_data[time_daily_data['요일'] == 'Friday'] == True) / 24
+num_sat = len(time_daily_data[time_daily_data['요일'] == 'Saturday'] == True) / 24
+num_sun = len(time_daily_data[time_daily_data['요일'] == 'Sunday'] == True) / 24
+
+# 월 104 / 화 104 / 수 105 / 목 105 / 금 105 / 토 104 / 일 104
+
+days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+times = [i for i in range(24)]
+
+# 나중에 plot을 그리기 위한 전체 리스트
+all_day_time_list = []
+
+for day in days :
+    if day in ['Monday', 'Tuesday', 'Saturday', 'Sunday'] :
+        num_of_days = 104
+    elif day in ['Wednesday', 'Thrusday', 'Friday'] :
+        num_of_days = 105
+        
+    for time in times :
+        globals()["{}_{}".format(day, time)] = sum(time_daily_data.loc[(time_daily_data['요일'] == day) &
+                                                                        (time_daily_data['시간'] == time), '진입차량수'])
+        exec("{}_{} = {}_{} // num_of_days".format(day, time, day, time))
+        exec("all_day_time_list.append({}_{})".format(day, time))
+#%%
+x_axis = [24 * i for i in range(7)]
+label_x_axis = ['월', '화', '수', '목', '금', '토', '일']
+plt.xticks(x_axis, label_x_axis)
+plt.plot(all_day_time_list)
