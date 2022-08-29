@@ -314,12 +314,15 @@ daily_data['Date'] = pd.to_datetime(daily_data['Date'], format='%Y-%m-%d')
 
 daily_data.set_index('Date', drop=True, inplace=True)
 #%%
+'''
+# 오류 발생...
 # stats model의 Seasnonl_decompose 라이브러리를 활용하여 전력 수요 데이터 분해 실시 
 from statsmodels.tsa.seasonal import seasonal_decompose # 데이터 필터 라이러리 호출 
 
 result = seasonal_decompose(daily_data, model='Additive')  
 result.plot()
-
+rnt
+'''
 #%%
 '''
 ===============================================================================
@@ -340,7 +343,6 @@ monthly_data.reset_index(inplace = True)
 monthly_data.rename(columns={'index':'Date'}, inplace=True)
 monthly_data.sort_index(inplace=True)
 
-monthly_data.info()
 
 monthly_data['Date'] = pd.to_datetime(monthly_data['Date'])
 
@@ -349,12 +351,15 @@ monthly_data.set_index('Date', drop=True, inplace=True)
 plt.title('비보이 광장 월별 그래프')
 plt.plot(monthly_data)
 #%%
+'''
+시계열 분해는 f5를 하게되면 오류가 발생...
 # stats model의 Seasnonl_decompose 라이브러리를 활용하여 전력 수요 데이터 분해 실시 
 from statsmodels.tsa.seasonal import seasonal_decompose # 데이터 필터 라이러리 호출 
 
 result = seasonal_decompose(monthly_data, model='Additive')  
 result.plot()
 #%%
+'''
 '''
 ===============================================================================
 월 별 진입차량수 시계열 데이터 시계열 분해 
@@ -369,7 +374,7 @@ array_day = data['입차일자'].unique()
 # 모든 날짜의 시간대의 값을 가진 변수
 all_time_data = []
 times = [i for i in range(24)]
-for day in array_day :
+for day in tqdm(array_day, desc = "일 별 시간대에 대한 데이터 처리중") :
     for time in times :
         temp = len(data[(data['입차일자'] == day) & (data['전처리_입차시간'] == time)])
         all_time_data.append(temp)
@@ -402,17 +407,24 @@ time_daily_data['요일'] = time_daily_data['Date'].dt.day_name()
 time_daily_data['시간'] = time_daily_data['Date'].dt.hour
 time_daily_data.set_index('Date', drop=True, inplace=True)
 #%%
+'''
+시계열 분해는 f5를 하게되면 오류가 발생...
 from statsmodels.tsa.seasonal import seasonal_decompose # 데이터 필터 라이러리 호출 
 
 result = seasonal_decompose(time_daily_data['진입차량수'], model='Additive')  
 result.plot()
+'''
 #%%
 # 그래프가 너무 길어서 2020년 1~6월 / 2020년 7월~12월 / 2021년 1월~6월 / 2021년 7월~12일
 # 2020년 1월 1일 ~ 2020년 6월 30일 : 182일 -> 4368 -> 0 ~ 4367
 # 2020년 7월 1일 ~ 2020년 12월 31일 : 184일 -> 4416 -> 4368 ~ 8783
 # 2021년 1월 1일 ~ 2021년 6월 30일 : 181일 -> 4344 -> 8784 ~ 13127
 # 2021년 7월 1일 ~ 2021년 12월 31일 : 184일 -> 4416 -> 13128 ~ 17543
-
+'''
+===============================================================================
+요일 별 진입차량수 시계열 데이터 시계열 분해 
+===============================================================================
+'''
 num_mon = len(time_daily_data[time_daily_data['요일'] == 'Monday'] == True) / 24
 num_tues = len(time_daily_data[time_daily_data['요일'] == 'Tuesday'] == True) / 24
 num_wedn = len(time_daily_data[time_daily_data['요일'] == 'Wednesday'] == True) / 24
@@ -445,3 +457,18 @@ x_axis = [24 * i for i in range(7)]
 label_x_axis = ['월', '화', '수', '목', '금', '토', '일']
 plt.xticks(x_axis, label_x_axis)
 plt.plot(all_day_time_list)
+#%%
+# 전체를 뽑아봤으니 이제 요일 벼로 한 번 확인해보기
+for day in days :
+    temp_list = []
+    for time in times :
+        exec("temp_list.append({}_{})".format(day, time))
+    plt.figure(figsize=(8, 6))
+    x_axis = [i for i in range(24)]
+    label_x_axis = [str(i) + '시~'+str(i+1)+'시' for i in range(24)]
+    plt.plot(x_axis, temp_list)
+    plt.tick_params(axis='x',direction = 'out', length=10, pad=10, labelsize=9, width = 2,  color='r', labelrotation = 50)
+    plt.axhline(y=sum(temp_list) / 24, color='r', linestyle = "--", linewidth=2)
+    plt.xticks(x_axis, label_x_axis)
+    plt.title('비보이 광장 주차장 {} 시간대별 그래프'.format(day))
+    plt.show()
