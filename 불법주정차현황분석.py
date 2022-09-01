@@ -11,7 +11,7 @@ font = font_manager.FontProperties(fname=font_path).get_name()
 rc('font', family=font)
 #%%
 # ★★★★★★★ 나중에 해볼 것 : 2018~2021데이터를 다 통합해서 시계열 분해 
-data = pd.read_csv('C:/Users/hyunj/Desktop/전주공모전자료/제공받은데이터/전라북도 전주시_불법주정차 단속현황_20220820.csv', encoding='CP949')
+data = pd.read_csv('C:/Users/hyunj/Desktop/전주공모전자료/제공받은데이터/전라북도 전주시_불법주정차 단속현황_20220830.csv', encoding='CP949')
 
 # 0시와 23시에도 단속을 한 적이 있음
 # 덕진구 : 2017년 상반기부터 2022년 상반기  478867개
@@ -315,3 +315,170 @@ for year in tqdm(years, desc = "연도별 전주시 데이터 처리중") :
     plt.ylabel('불법주정차 단속 수 ')
     plt.title('전주시 {}년 월별 불법주정차 현황'.format(year))
     plt.show()
+#%%
+'''
+===============================================================================
+덕진구(요일별)
+===============================================================================
+'''
+
+# 2018년 1월 1일부터 2021년 12월 31일까지 12월 31일까지 월, 화, 수, 목, 금, 토, 일이 며칠 있는지 확인해야함
+# 요일을 count하기 위한 임시 데이터프레임 만들기
+
+temp_date_df = pd.date_range(start = '2018-01-01', end = '2021-12-31', freq='D')
+temp = {'Date' : temp_date_df.values}
+temp_date_df = pd.DataFrame(temp, columns = ['Date'])
+temp_date_df['Date'] = pd.to_datetime(temp_date_df['Date'])
+temp_date_df['요일'] = temp_date_df['Date'].dt.day_name()
+print(temp_date_df['요일'].value_counts())
+
+data_dukjin['Date'] = pd.to_datetime(data_dukjin['단속일자'])
+data_dukjin['요일'] = data_dukjin['Date'].dt.day_name()
+
+
+#  결과
+#Monday       209
+#Tuesday      209
+#Wednesday    209
+#Thursday     209
+#Friday       209
+#Saturday     208
+#Sunday       208
+#%%
+days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+times = [i for i in range(24)]
+
+# 나중에 plot을 그리기 위한 전체 리스트
+all_day_time_list = []
+
+for day in days :
+    if day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] :
+        num_of_days = 209
+    elif day in ['Saturday', 'Sunday'] :
+        num_of_days = 208
+        
+    for time in times :
+        globals()["{}_{}".format(day, time)] = len(data_dukjin.loc[(data_dukjin['요일'] == day) &
+                                                                        (data_dukjin['단속된 시간'] == time)])
+        exec("{}_{} = {}_{} // num_of_days".format(day, time, day, time))
+        exec("all_day_time_list.append({}_{})".format(day, time))
+
+#%%
+x_axis = [24 * i for i in range(7)]
+label_x_axis = ['월', '화', '수', '목', '금', '토', '일']
+plt.xticks(x_axis, label_x_axis)
+plt.title('덕진구 불법주정차 요일별 현황')
+plt.plot(all_day_time_list)
+#%%
+# 전체를 뽑아봤으니 이제 요일 별로 한 번 확인해보기
+for day in days :
+    temp_list = []
+    for time in times :
+        exec("temp_list.append({}_{})".format(day, time))
+    plt.figure(figsize=(8, 6))
+    x_axis = [i for i in range(24)]
+    label_x_axis = [str(i) + '시~'+str(i+1)+'시' for i in range(24)]
+    plt.plot(x_axis, temp_list)
+    plt.tick_params(axis='x',direction = 'out', length=10, pad=10, labelsize=9, width = 2,  color='r', labelrotation = 50)
+    plt.axhline(y=sum(temp_list) / 24, color='r', linestyle = "--", linewidth=2)
+    plt.xticks(x_axis, label_x_axis)
+    plt.title('덕진구 불법주정차 {} 시간대별 그래프'.format(day))
+    plt.show()
+#%%
+'''
+===============================================================================
+완산구(요일별)
+===============================================================================
+'''
+data_wansan['Date'] = pd.to_datetime(data_wansan['단속일자'])
+data_wansan['요일'] = data_wansan['Date'].dt.day_name()
+
+days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+times = [i for i in range(24)]
+
+# 나중에 plot을 그리기 위한 전체 리스트
+all_day_time_list = []
+
+for day in days :
+    if day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] :
+        num_of_days = 209
+    elif day in ['Saturday', 'Sunday'] :
+        num_of_days = 208
+        
+    for time in times :
+        globals()["{}_{}".format(day, time)] = len(data_wansan.loc[(data_wansan['요일'] == day) &
+                                                                        (data_wansan['단속된 시간'] == time)])
+        exec("{}_{} = {}_{} // num_of_days".format(day, time, day, time))
+        exec("all_day_time_list.append({}_{})".format(day, time))
+
+#%%
+x_axis = [24 * i for i in range(7)]
+label_x_axis = ['월', '화', '수', '목', '금', '토', '일']
+plt.xticks(x_axis, label_x_axis)
+plt.title('완산구 불법주정차 요일별 현황')
+plt.plot(all_day_time_list)
+#%%
+# 전체를 뽑아봤으니 이제 요일 별로 한 번 확인해보기
+for day in days :
+    temp_list = []
+    for time in times :
+        exec("temp_list.append({}_{})".format(day, time))
+    plt.figure(figsize=(8, 6))
+    x_axis = [i for i in range(24)]
+    label_x_axis = [str(i) + '시~'+str(i+1)+'시' for i in range(24)]
+    plt.plot(x_axis, temp_list)
+    plt.tick_params(axis='x',direction = 'out', length=10, pad=10, labelsize=9, width = 2,  color='r', labelrotation = 50)
+    plt.axhline(y=sum(temp_list) / 24, color='r', linestyle = "--", linewidth=2)
+    plt.xticks(x_axis, label_x_axis)
+    plt.title('완산구 불법주정차 {} 시간대별 그래프'.format(day))
+    plt.show()
+
+#%%
+'''
+===============================================================================
+전주시(요일별)
+===============================================================================
+'''
+data['Date'] = pd.to_datetime(data['단속일자'])
+data['요일'] = data['Date'].dt.day_name()
+
+days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+times = [i for i in range(24)]
+
+# 나중에 plot을 그리기 위한 전체 리스트
+all_day_time_list = []
+
+for day in days :
+    if day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] :
+        num_of_days = 209
+    elif day in ['Saturday', 'Sunday'] :
+        num_of_days = 208
+        
+    for time in times :
+        globals()["{}_{}".format(day, time)] = len(data.loc[(data['요일'] == day) &
+                                                                        (data['단속된 시간'] == time)])
+        exec("{}_{} = {}_{} // num_of_days".format(day, time, day, time))
+        exec("all_day_time_list.append({}_{})".format(day, time))
+
+#%%
+x_axis = [24 * i for i in range(7)]
+label_x_axis = ['월', '화', '수', '목', '금', '토', '일']
+plt.xticks(x_axis, label_x_axis)
+plt.title('전주시 불법주정차 요일별 현황')
+plt.plot(all_day_time_list)
+#%%
+# 전체를 뽑아봤으니 이제 요일 별로 한 번 확인해보기
+for day in days :
+    temp_list = []
+    for time in times :
+        exec("temp_list.append({}_{})".format(day, time))
+    plt.figure(figsize=(8, 6))
+    x_axis = [i for i in range(24)]
+    label_x_axis = [str(i) + '시~'+str(i+1)+'시' for i in range(24)]
+    plt.plot(x_axis, temp_list)
+    plt.tick_params(axis='x',direction = 'out', length=10, pad=10, labelsize=9, width = 2,  color='r', labelrotation = 50)
+    plt.axhline(y=sum(temp_list) / 24, color='r', linestyle = "--", linewidth=2)
+    plt.xticks(x_axis, label_x_axis)
+    plt.title('전주시 불법주정차 {} 시간대별 그래프'.format(day))
+    plt.show()
+    

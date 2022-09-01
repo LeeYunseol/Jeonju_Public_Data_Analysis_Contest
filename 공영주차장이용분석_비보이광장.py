@@ -445,7 +445,7 @@ for day in days :
     if day in ['Monday', 'Tuesday', 'Saturday', 'Sunday'] :
         num_of_days = 104
     elif day in ['Wednesday', 'Thrusday', 'Friday'] :
-        num_of_days = 105
+        num_of_days = 105 
         
     for time in times :
         globals()["{}_{}".format(day, time)] = sum(time_daily_data.loc[(time_daily_data['요일'] == day) &
