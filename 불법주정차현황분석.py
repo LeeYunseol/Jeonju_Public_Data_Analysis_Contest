@@ -123,8 +123,8 @@ plt.show()
 덕진구(시간별)
 ===============================================================================
 '''
-
-data_dukjin = data[data['구청구분'] == '덕진구'] 
+# 고정식 cctv만 해본거임 코드 다름
+data_dukjin = data[(data['구청구분'] == '덕진구') & (data['단속구분'] == '고정식CCTV')] 
 
 years = [2018, 2019, 2020, 2021]
 
@@ -150,7 +150,7 @@ for year in tqdm(years, desc = "연도별 덕진구 데이터 처리중") :
     plt.axhline(y=sum(time_list) / 24, color='r', linestyle = "--", linewidth=2)
     plt.xlabel('시간')
     plt.ylabel('불법주정차 단속 수 ')
-    plt.title('덕진구 {}년 시간별 불법주정차 현황'.format(year))
+    plt.title('덕진구 고정식CCTV {}년 시간별 불법주정차 현황'.format(year))
     plt.show()
 #%%
 '''
@@ -158,8 +158,8 @@ for year in tqdm(years, desc = "연도별 덕진구 데이터 처리중") :
 완산구(시간별)
 ===============================================================================
 '''
-
-data_wansan = data[data['구청구분'] == '완산구'] 
+# 고정식 cctv만 해본거임 코드 다름
+data_wansan = data[(data['구청구분'] == '완산구') & (data['단속구분'] == "고정형CCTV단속")] 
 
 years = [2018, 2019, 2020, 2021]
 
@@ -185,7 +185,7 @@ for year in tqdm(years, desc = "연도별 완산구 데이터 처리중") :
     plt.axhline(y=sum(time_list) / 24, color='r', linestyle = "--", linewidth=2)
     plt.xlabel('시간')
     plt.ylabel('불법주정차 단속 수 ')
-    plt.title('완산구 {}년 시간별 불법주정차 현황'.format(year))
+    plt.title('완산구 고정식CCTV {}년 시간별 불법주정차 현황'.format(year))
     plt.show()
 
 #%%

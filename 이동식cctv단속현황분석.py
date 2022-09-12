@@ -100,3 +100,5 @@ for year in tqdm(years, desc = "연도별 완산구 데이터 처리중") :
     plt.show()
 #%%
 print(data_wansan['단속된 시간'].value_counts())
+#%%
+data.to_csv('전처리된 불법주정차현황.csv', index = False, encoding = 'CP949')
