@@ -63,7 +63,7 @@ for i in tqdm(range(len(data_wansan)), desc = "완산구 데이터 처리중") :
             one_word_state = False
             # 한글자씩 조회해서도 찾았을때도 찾았다고 알려줘야함
             # 이렇게 위에 다 찾아봤는데 안 나왔다면 place변수를 기준으로 한 글짜식 주소에서 찾아보기
-            for k in range(3, len(place)) :
+            for k in range(4, len(place)) :
                 if place[0:k] in establish_place :
                     data_cctv_wansan.loc[j, '단속수'] += 1
                     find_state = True

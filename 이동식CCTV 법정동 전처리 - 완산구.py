@@ -98,7 +98,7 @@ data_cctv = pd.read_csv('C:/Users/hyunj/Desktop/전주공모전자료/제공받�
 '''
 data_cctv_wansan = data_cctv.loc[(data_cctv['관리'] == '완산')]
 data_wansan = data.loc[(data['구청구분'] == '완산구') & (data['단속구분'] == '이동식CCTV')] 
-data_wansan = data_wansan.loc[(data_wansan['단속된 시간'] == 14) | (data_wansan['단속된 시간'] == 15) | (data_wansan['단속된 시간'] == 16)]
+data_wansan = data_wansan.loc[(data_wansan['단속된 시간'] == 14) | (data_wansan['단속된 시간'] == 15) | (data_wansan['단속된 시간'] == 16) | (data_wansan['단속된 시간'] == 17)]
 
 data_cctv_wansan.reset_index(inplace = True)
 data_wansan.reset_index(inplace = True)

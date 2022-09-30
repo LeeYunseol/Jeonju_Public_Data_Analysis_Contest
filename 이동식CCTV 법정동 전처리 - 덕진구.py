@@ -133,7 +133,7 @@ data = pd.read_csv('C:/Users/hyunj/Desktop/전주공모전자료/제공받은데
 '''
 data_cctv_dukjin = data_cctv.loc[(data_cctv['관리'] == '덕진')]
 data_dukjin = data.loc[(data['구청구분'] == '덕진구') & (data['단속구분'] == '고정식CCTV')] 
-data_dukjin = data_dukjin.loc[(data_dukjin['단속된 시간'] == 14) | (data_dukjin['단속된 시간'] == 15) | (data_dukjin['단속된 시간'] == 16)]
+data_dukjin = data_dukjin.loc[(data_dukjin['단속된 시간'] == 14) | (data_dukjin['단속된 시간'] == 15) | (data_dukjin['단속된 시간'] == 16) | (data_dukjin['단속된 시간'] == 17)]
 
 data_cctv_dukjin.reset_index(inplace = True)
 data_dukjin.reset_index(inplace = True)
